@@ -21,36 +21,40 @@ num_epochs = (
 batch_size = 64  # the size of input data used for one iteration
 lr = 1e-3  # size of step
 
-train_transforms = transforms.Compose(
-    [
-        transforms.RandomRotation(30),
-        transforms.RandomResizedCrop(input_size[0]),
-        transforms.RandomHorizontalFlip(),
-        transforms.ToTensor(),
-        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
-    ]
-)
+# train_transforms = transforms.Compose(
+#     [
+#         transforms.RandomRotation(30),
+#         transforms.RandomResizedCrop(input_size[0]),
+#         transforms.RandomHorizontalFlip(),
+#         transforms.ToTensor(),
+#         transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
+#     ]
+# )
 
-test_transforms = transforms.Compose(
-    [
-        transforms.Resize(255),
-        transforms.CenterCrop(input_size[0]),
-        transforms.ToTensor(),
-        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
-    ]
-)
+# test_transforms = transforms.Compose(
+#     [
+#         transforms.Resize(255),
+#         transforms.CenterCrop(input_size[0]),
+#         transforms.ToTensor(),
+#         transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
+#     ]
+# )
 
-train_data = datasets.ImageFolder(data_dir + "/train", transform=train_transforms)
-test_data = datasets.ImageFolder(data_dir + "/test", transform=test_transforms)
+# train_data = datasets.ImageFolder(data_dir + "/train", transform=train_transforms)
+# test_data = datasets.ImageFolder(data_dir + "/test", transform=test_transforms)
 
-trainloader = torch.utils.data.DataLoader(
-    train_data, batch_size=batch_size, shuffle=True
-)
-testloader = torch.utils.data.DataLoader(test_data, batch_size=batch_size)
+# trainloader = torch.utils.data.DataLoader(
+#     train_data, batch_size=batch_size, shuffle=True
+# )
+# testloader = torch.utils.data.DataLoader(test_data, batch_size=batch_size)
 
 # load pretrained densenet121
-model = models.densenet121(pretrained=True)
-print(model)
+# model = models.densenet121(weights=None)
+# # models.DenseNet121_Weights()
+# pre = torch.load("weights/densenet121-a639ec97.pth")
+# model.load_state_dict(pre)
+# model = torch.hub.load("pytorch/vision", "densenet121", weights="IMAGENET1K_V2")
+model = torch.hub.load("pytorch/vision", "resnet50", weights="IMAGENET1K_V2")
 # Freeze parameters so we don't backprop through them
 for param in model.parameters():
     param.requires_grad = False
@@ -71,6 +75,8 @@ classifier = nn.Sequential(
     )
 )
 model.classifier = classifier
+print(model)
+exit()
 optimizer = optim.Adam(model.classifier.parameters(), lr=lr)
 criterion = nn.NLLLoss()
 
