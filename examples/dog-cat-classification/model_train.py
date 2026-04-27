@@ -129,14 +129,15 @@ for epoch in range(num_epochs):
             running_loss = 0
             model.train()
 
-# gguf_writer = gguf.GGUFWriter(model_path, "mnist-fc")
-# print()
-# print(f"Model tensors saved to {model_path}:")
-# for tensor_name in net.state_dict().keys():
-#     data = net.state_dict()[tensor_name].squeeze().cpu().numpy()
-#     print(tensor_name, "\t", data.shape)
-#     gguf_writer.add_tensor(tensor_name, data)
-# gguf_writer.write_header_to_file()
-# gguf_writer.write_kv_data_to_file()
-# gguf_writer.write_tensors_to_file()
-# gguf_writer.close()
+model_path = "./icls.gguf"
+gguf_writer = gguf.GGUFWriter(model_path, "icls")
+print()
+print(f"Model tensors saved to {model_path}:")
+for tensor_name in model.state_dict().keys():
+    data = model.state_dict()[tensor_name].squeeze().cpu().numpy()
+    print(tensor_name, "\t", data.shape)
+    gguf_writer.add_tensor(tensor_name, data)
+gguf_writer.write_header_to_file()
+gguf_writer.write_kv_data_to_file()
+gguf_writer.write_tensors_to_file()
+gguf_writer.close()
