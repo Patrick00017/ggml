@@ -1,6 +1,6 @@
 #
-# dog-cat-classification
+# image_classification
 
-set(TEST_TARGET dog-cat-classification)
-add_library(${TEST_TARGET} STATIC dog-cat-classification.cpp)
+set(TEST_TARGET image_classification)
+add_executable(${TEST_TARGET} image_classification.cpp)
 target_link_libraries(${TEST_TARGET} PRIVATE ggml common)

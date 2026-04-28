@@ -54,7 +54,8 @@ lr = 1e-3  # size of step
 # pre = torch.load("weights/densenet121-a639ec97.pth")
 # model.load_state_dict(pre)
 # model = torch.hub.load("pytorch/vision", "densenet121", weights="IMAGENET1K_V2")
-model = torch.hub.load("pytorch/vision", "resnet50", weights="IMAGENET1K_V2")
+# model = torch.hub.load("pytorch/vision", "resnet50", weights="IMAGENET1K_V2")
+model = models.resnet50(pretrained=True)
 # Freeze parameters so we don't backprop through them
 for param in model.parameters():
     param.requires_grad = False
@@ -65,7 +66,7 @@ from collections import OrderedDict
 classifier = nn.Sequential(
     OrderedDict(
         [
-            ("fc1", nn.Linear(1024, 512)),
+            ("fc1", nn.Linear(1000, 512)),
             ("relu1", nn.ReLU()),
             ("fc2", nn.Linear(512, 256)),
             ("relu2", nn.ReLU()),
@@ -76,66 +77,65 @@ classifier = nn.Sequential(
 )
 model.classifier = classifier
 print(model)
-exit()
-optimizer = optim.Adam(model.classifier.parameters(), lr=lr)
-criterion = nn.NLLLoss()
+# optimizer = optim.Adam(model.classifier.parameters(), lr=lr)
+# criterion = nn.NLLLoss()
 
-traininglosses = []
-testinglosses = []
-testaccuracy = []
-totalsteps = []
-steps = 0
-running_loss = 0
-print_every = 5
-for epoch in range(num_epochs):
-    for inputs, labels in trainloader:
-        steps += 1
-        # Move input and label tensors to the default device
-        inputs, labels = inputs.to(device), labels.to(device)
+# traininglosses = []
+# testinglosses = []
+# testaccuracy = []
+# totalsteps = []
+# steps = 0
+# running_loss = 0
+# print_every = 5
+# for epoch in range(num_epochs):
+#     for inputs, labels in trainloader:
+#         steps += 1
+#         # Move input and label tensors to the default device
+#         inputs, labels = inputs.to(device), labels.to(device)
 
-        optimizer.zero_grad()
+#         optimizer.zero_grad()
 
-        logps = model.forward(inputs)
-        loss = criterion(logps, labels)
-        loss.backward()
-        optimizer.step()
+#         logps = model.forward(inputs)
+#         loss = criterion(logps, labels)
+#         loss.backward()
+#         optimizer.step()
 
-        running_loss += loss.item()
+#         running_loss += loss.item()
 
-        if steps % print_every == 0:
-            test_loss = 0
-            accuracy = 0
-            model.eval()
-            with torch.no_grad():
-                for inputs, labels in testloader:
-                    inputs, labels = inputs.to(device), labels.to(device)
-                    logps = model.forward(inputs)
-                    batch_loss = criterion(logps, labels)
+#         if steps % print_every == 0:
+#             test_loss = 0
+#             accuracy = 0
+#             model.eval()
+#             with torch.no_grad():
+#                 for inputs, labels in testloader:
+#                     inputs, labels = inputs.to(device), labels.to(device)
+#                     logps = model.forward(inputs)
+#                     batch_loss = criterion(logps, labels)
 
-                    test_loss += batch_loss.item()
+#                     test_loss += batch_loss.item()
 
-                    # Calculate accuracy
-                    ps = torch.exp(logps)
-                    top_p, top_class = ps.topk(1, dim=1)
-                    equals = top_class == labels.view(*top_class.shape)
-                    accuracy += torch.mean(equals.type(torch.FloatTensor)).item()
+#                     # Calculate accuracy
+#                     ps = torch.exp(logps)
+#                     top_p, top_class = ps.topk(1, dim=1)
+#                     equals = top_class == labels.view(*top_class.shape)
+#                     accuracy += torch.mean(equals.type(torch.FloatTensor)).item()
 
-            traininglosses.append(running_loss / print_every)
-            testinglosses.append(test_loss / len(testloader))
-            testaccuracy.append(accuracy / len(testloader))
-            totalsteps.append(steps)
-            print(
-                f"Device {device}.."
-                f"Epoch {epoch+1}/{num_epochs}.. "
-                f"Step {steps}.. "
-                f"Train loss: {running_loss/print_every:.3f}.. "
-                f"Test loss: {test_loss/len(testloader):.3f}.. "
-                f"Test accuracy: {accuracy/len(testloader):.3f}"
-            )
-            running_loss = 0
-            model.train()
+#             traininglosses.append(running_loss / print_every)
+#             testinglosses.append(test_loss / len(testloader))
+#             testaccuracy.append(accuracy / len(testloader))
+#             totalsteps.append(steps)
+#             print(
+#                 f"Device {device}.."
+#                 f"Epoch {epoch+1}/{num_epochs}.. "
+#                 f"Step {steps}.. "
+#                 f"Train loss: {running_loss/print_every:.3f}.. "
+#                 f"Test loss: {test_loss/len(testloader):.3f}.. "
+#                 f"Test accuracy: {accuracy/len(testloader):.3f}"
+#             )
+#             running_loss = 0
+#             model.train()
 
-model_path = "./icls.gguf"
+model_path = "weights/icls.gguf"
 gguf_writer = gguf.GGUFWriter(model_path, "icls")
 print()
 print(f"Model tensors saved to {model_path}:")
