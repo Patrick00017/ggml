@@ -38,13 +38,15 @@ struct icls_hparams {
 
 struct conv2d_layer {
     struct ggml_tensor * weights;
-    struct ggml_tensor * biases;
-    struct ggml_tensor * scales;
-    struct ggml_tensor * rolling_mean;
-    struct ggml_tensor * rolling_variance;
-    int padding = 1;
+
+    struct ggml_tensor * bn_weight;
+    struct ggml_tensor * bias;
+    struct ggml_tensor * running_mean;
+    struct ggml_tensor * running_var;
+    int stride = 1;
+    int padding = 0;
     bool batch_normalize = true;
-    bool activate = true; // true for leaky relu, false for linear
+    bool activate = false; // true for relu, false for linear
 };
 
 struct icls_cls_head {

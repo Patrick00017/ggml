@@ -82,7 +82,355 @@ bool icls_model_init_from_file(const std::string &fname, icls_model &model){
     gguf_free(gguf_ctx);
     ggml_free(tmp_ctx);
     
-    // TODO: load model.ctx tensors into backbone
+    // load model.ctx tensors into backbone
+    model.backbone.conv1.padding = 3;
+    model.backbone.conv1.stride = 2;
+    model.backbone.conv1.activate = true;
+
+    // layer1.0
+    model.backbone.layer1_0.resize(4); // 3 conv2d and 1 downsample
+    model.backbone.layer1_0[1].padding = 1;
+    model.backbone.layer1_0[2].activate = true;
+    for (int i = 0; i < (int)model.backbone.layer1_0.size() - 1; i++) {
+        char name[256];
+        int index = i + 1;
+        snprintf(name, sizeof(name), "layer1.0.conv%d.weight", index);
+        model.backbone.layer1_0[i].weights = ggml_get_tensor(model.ctx, name);
+        if (model.backbone.layer1_0[i].batch_normalize) {
+            snprintf(name, sizeof(name), "layer1.0.bn%d.weight", index);
+            model.backbone.layer1_0[i].bn_weight = ggml_get_tensor(model.ctx, name);
+            snprintf(name, sizeof(name), "layer1.0.bn%d.bias", index);
+            model.backbone.layer1_0[i].bias = ggml_get_tensor(model.ctx, name);
+            snprintf(name, sizeof(name), "layer1.0.bn%d.running_mean", index);
+            model.backbone.layer1_0[i].running_mean = ggml_get_tensor(model.ctx, name);
+            snprintf(name, sizeof(name), "layer1.0.bn%d.running_var", index);
+            model.backbone.layer1_0[i].running_var = ggml_get_tensor(model.ctx, name);
+        }
+    }
+    // layer1.0 contains downsample
+    model.backbone.layer1_0[model.backbone.layer1_0.size() - 1].weights = ggml_get_tensor(model.ctx, "layer1.0.downsample.0.weight");
+    model.backbone.layer1_0[model.backbone.layer1_0.size() - 1].bn_weight = ggml_get_tensor(model.ctx, "layer1.0.downsample.1.weight");
+    model.backbone.layer1_0[model.backbone.layer1_0.size() - 1].bias = ggml_get_tensor(model.ctx, "layer1.0.downsample.1.bias");
+    model.backbone.layer1_0[model.backbone.layer1_0.size() - 1].running_mean = ggml_get_tensor(model.ctx, "layer1.0.downsample.1.running_mean");
+    model.backbone.layer1_0[model.backbone.layer1_0.size() - 1].running_var = ggml_get_tensor(model.ctx, "layer1.0.downsample.1.running_var");
+
+    // layer1.1
+    model.backbone.layer1_1.resize(3);
+    model.backbone.layer1_1[1].padding = 1;
+    model.backbone.layer1_1[2].activate = true;
+    for (int i = 0; i < (int)model.backbone.layer1_1.size(); i++) {
+        char name[256];
+        int index = i + 1;
+        snprintf(name, sizeof(name), "layer1.1.conv%d.weight", index);
+        model.backbone.layer1_1[i].weights = ggml_get_tensor(model.ctx, name);
+        if (model.backbone.layer1_1[i].batch_normalize) {
+            snprintf(name, sizeof(name), "layer1.1.bn%d.weight", index);
+            model.backbone.layer1_1[i].bn_weight = ggml_get_tensor(model.ctx, name);
+            snprintf(name, sizeof(name), "layer1.1.bn%d.bias", index);
+            model.backbone.layer1_1[i].bias = ggml_get_tensor(model.ctx, name);
+            snprintf(name, sizeof(name), "layer1.1.bn%d.running_mean", index);
+            model.backbone.layer1_1[i].running_mean = ggml_get_tensor(model.ctx, name);
+            snprintf(name, sizeof(name), "layer1.1.bn%d.running_var", index);
+            model.backbone.layer1_1[i].running_var = ggml_get_tensor(model.ctx, name);
+        }
+    }
+
+    // layer1.2
+    model.backbone.layer1_2.resize(3);
+    model.backbone.layer1_2[1].padding = 1;
+    model.backbone.layer1_2[2].activate = true;
+    for (int i = 0; i < (int)model.backbone.layer1_2.size(); i++) {
+        char name[256];
+        int index = i + 1;
+        snprintf(name, sizeof(name), "layer1.2.conv%d.weight", index);
+        model.backbone.layer1_2[i].weights = ggml_get_tensor(model.ctx, name);
+        if (model.backbone.layer1_2[i].batch_normalize) {
+            snprintf(name, sizeof(name), "layer1.2.bn%d.weight", index);
+            model.backbone.layer1_2[i].bn_weight = ggml_get_tensor(model.ctx, name);
+            snprintf(name, sizeof(name), "layer1.2.bn%d.bias", index);
+            model.backbone.layer1_2[i].bias = ggml_get_tensor(model.ctx, name);
+            snprintf(name, sizeof(name), "layer1.2.bn%d.running_mean", index);
+            model.backbone.layer1_2[i].running_mean = ggml_get_tensor(model.ctx, name);
+            snprintf(name, sizeof(name), "layer1.2.bn%d.running_var", index);
+            model.backbone.layer1_2[i].running_var = ggml_get_tensor(model.ctx, name);
+        }
+    }
+
+    // layer2.0
+    model.backbone.layer2_0.resize(4); // 3 conv2d and 1 downsample
+    model.backbone.layer2_0[1].stride = 2;
+    model.backbone.layer2_0[1].padding = 1;
+    model.backbone.layer2_0[2].activate = true;
+    model.backbone.layer2_0[3].stride = 2;
+    for (int i = 0; i < (int)model.backbone.layer2_0.size() - 1; i++) {
+        char name[256];
+        int index = i + 1;
+        snprintf(name, sizeof(name), "layer2.0.conv%d.weight", index);
+        model.backbone.layer2_0[i].weights = ggml_get_tensor(model.ctx, name);
+        if (model.backbone.layer2_0[i].batch_normalize) {
+            snprintf(name, sizeof(name), "layer2.0.bn%d.weight", index);
+            model.backbone.layer2_0[i].bn_weight = ggml_get_tensor(model.ctx, name);
+            snprintf(name, sizeof(name), "layer2.0.bn%d.bias", index);
+            model.backbone.layer2_0[i].bias = ggml_get_tensor(model.ctx, name);
+            snprintf(name, sizeof(name), "layer2.0.bn%d.running_mean", index);
+            model.backbone.layer2_0[i].running_mean = ggml_get_tensor(model.ctx, name);
+            snprintf(name, sizeof(name), "layer2.0.bn%d.running_var", index);
+            model.backbone.layer2_0[i].running_var = ggml_get_tensor(model.ctx, name);
+        }
+    }
+    // layer2.0 contains downsample
+    model.backbone.layer2_0[model.backbone.layer2_0.size() - 1].weights = ggml_get_tensor(model.ctx, "layer2.0.downsample.0.weight");
+    model.backbone.layer2_0[model.backbone.layer2_0.size() - 1].bn_weight = ggml_get_tensor(model.ctx, "layer2.0.downsample.1.weight");
+    model.backbone.layer2_0[model.backbone.layer2_0.size() - 1].bias = ggml_get_tensor(model.ctx, "layer2.0.downsample.1.bias");
+    model.backbone.layer2_0[model.backbone.layer2_0.size() - 1].running_mean = ggml_get_tensor(model.ctx, "layer2.0.downsample.1.running_mean");
+    model.backbone.layer2_0[model.backbone.layer2_0.size() - 1].running_var = ggml_get_tensor(model.ctx, "layer2.0.downsample.1.running_var");
+
+    // layer2.1
+    model.backbone.layer2_1.resize(3);
+    model.backbone.layer2_1[1].padding = 1;
+    model.backbone.layer2_1[2].activate = true;
+    for (int i = 0; i < (int)model.backbone.layer2_1.size(); i++) {
+        char name[256];
+        int index = i + 1;
+        snprintf(name, sizeof(name), "layer2.1.conv%d.weight", index);
+        model.backbone.layer2_1[i].weights = ggml_get_tensor(model.ctx, name);
+        if (model.backbone.layer2_1[i].batch_normalize) {
+            snprintf(name, sizeof(name), "layer2.1.bn%d.weight", index);
+            model.backbone.layer2_1[i].bn_weight = ggml_get_tensor(model.ctx, name);
+            snprintf(name, sizeof(name), "layer2.1.bn%d.bias", index);
+            model.backbone.layer2_1[i].bias = ggml_get_tensor(model.ctx, name);
+            snprintf(name, sizeof(name), "layer2.1.bn%d.running_mean", index);
+            model.backbone.layer2_1[i].running_mean = ggml_get_tensor(model.ctx, name);
+            snprintf(name, sizeof(name), "layer2.1.bn%d.running_var", index);
+            model.backbone.layer2_1[i].running_var = ggml_get_tensor(model.ctx, name);
+        }
+    }
+
+    // layer2.2
+    model.backbone.layer2_2.resize(3);
+    model.backbone.layer2_2[1].padding = 1;
+    model.backbone.layer2_2[2].activate = true;
+    for (int i = 0; i < (int)model.backbone.layer2_2.size(); i++) {
+        char name[256];
+        int index = i + 1;
+        snprintf(name, sizeof(name), "layer2.2.conv%d.weight", index);
+        model.backbone.layer2_2[i].weights = ggml_get_tensor(model.ctx, name);
+        if (model.backbone.layer2_2[i].batch_normalize) {
+            snprintf(name, sizeof(name), "layer2.2.bn%d.weight", index);
+            model.backbone.layer2_2[i].bn_weight = ggml_get_tensor(model.ctx, name);
+            snprintf(name, sizeof(name), "layer2.2.bn%d.bias", index);
+            model.backbone.layer2_2[i].bias = ggml_get_tensor(model.ctx, name);
+            snprintf(name, sizeof(name), "layer2.2.bn%d.running_mean", index);
+            model.backbone.layer2_2[i].running_mean = ggml_get_tensor(model.ctx, name);
+            snprintf(name, sizeof(name), "layer2.2.bn%d.running_var", index);
+            model.backbone.layer2_2[i].running_var = ggml_get_tensor(model.ctx, name);
+        }
+    }
+
+    // layer2.3
+    model.backbone.layer2_3.resize(3);
+    model.backbone.layer2_3[1].padding = 1;
+    model.backbone.layer2_3[2].activate = true;
+    for (int i = 0; i < (int)model.backbone.layer2_3.size(); i++) {
+        char name[256];
+        int index = i + 1;
+        snprintf(name, sizeof(name), "layer2.3.conv%d.weight", index);
+        model.backbone.layer2_3[i].weights = ggml_get_tensor(model.ctx, name);
+        if (model.backbone.layer2_3[i].batch_normalize) {
+            snprintf(name, sizeof(name), "layer2.3.bn%d.weight", index);
+            model.backbone.layer2_3[i].bn_weight = ggml_get_tensor(model.ctx, name);
+            snprintf(name, sizeof(name), "layer2.3.bn%d.bias", index);
+            model.backbone.layer2_3[i].bias = ggml_get_tensor(model.ctx, name);
+            snprintf(name, sizeof(name), "layer2.3.bn%d.running_mean", index);
+            model.backbone.layer2_3[i].running_mean = ggml_get_tensor(model.ctx, name);
+            snprintf(name, sizeof(name), "layer2.3.bn%d.running_var", index);
+            model.backbone.layer2_3[i].running_var = ggml_get_tensor(model.ctx, name);
+        }
+    }
+
+    // layer3.0
+    model.backbone.layer3_0.resize(4); // 3 conv2d and 1 downsample
+    model.backbone.layer3_0[1].stride = 2;
+    model.backbone.layer3_0[1].padding = 1;
+    model.backbone.layer3_0[2].activate = true;
+    model.backbone.layer3_0[3].stride = 2;
+    for (int i = 0; i < (int)model.backbone.layer3_0.size() - 1; i++) {
+        char name[256];
+        int index = i + 1;
+        snprintf(name, sizeof(name), "layer3.0.conv%d.weight", index);
+        model.backbone.layer3_0[i].weights = ggml_get_tensor(model.ctx, name);
+        if (model.backbone.layer3_0[i].batch_normalize) {
+            snprintf(name, sizeof(name), "layer3.0.bn%d.weight", index);
+            model.backbone.layer3_0[i].bn_weight = ggml_get_tensor(model.ctx, name);
+            snprintf(name, sizeof(name), "layer3.0.bn%d.bias", index);
+            model.backbone.layer3_0[i].bias = ggml_get_tensor(model.ctx, name);
+            snprintf(name, sizeof(name), "layer3.0.bn%d.running_mean", index);
+            model.backbone.layer3_0[i].running_mean = ggml_get_tensor(model.ctx, name);
+            snprintf(name, sizeof(name), "layer3.0.bn%d.running_var", index);
+            model.backbone.layer3_0[i].running_var = ggml_get_tensor(model.ctx, name);
+        }
+    }
+    // layer3.0 contains downsample
+    model.backbone.layer3_0[model.backbone.layer3_0.size() - 1].weights = ggml_get_tensor(model.ctx, "layer3.0.downsample.0.weight");
+    model.backbone.layer3_0[model.backbone.layer3_0.size() - 1].bn_weight = ggml_get_tensor(model.ctx, "layer3.0.downsample.1.weight");
+    model.backbone.layer3_0[model.backbone.layer3_0.size() - 1].bias = ggml_get_tensor(model.ctx, "layer3.0.downsample.1.bias");
+    model.backbone.layer3_0[model.backbone.layer3_0.size() - 1].running_mean = ggml_get_tensor(model.ctx, "layer3.0.downsample.1.running_mean");
+    model.backbone.layer3_0[model.backbone.layer3_0.size() - 1].running_var = ggml_get_tensor(model.ctx, "layer3.0.downsample.1.running_var");
+
+    // layer3.1
+    model.backbone.layer3_1.resize(3);
+    model.backbone.layer3_1[1].padding = 1;
+    model.backbone.layer3_1[2].activate = true;
+    for (int i = 0; i < (int)model.backbone.layer3_1.size(); i++) {
+        char name[256];
+        int index = i + 1;
+        snprintf(name, sizeof(name), "layer3.1.conv%d.weight", index);
+        model.backbone.layer3_1[i].weights = ggml_get_tensor(model.ctx, name);
+        if (model.backbone.layer3_1[i].batch_normalize) {
+            snprintf(name, sizeof(name), "layer3.1.bn%d.weight", index);
+            model.backbone.layer3_1[i].bn_weight = ggml_get_tensor(model.ctx, name);
+            snprintf(name, sizeof(name), "layer3.1.bn%d.bias", index);
+            model.backbone.layer3_1[i].bias = ggml_get_tensor(model.ctx, name);
+            snprintf(name, sizeof(name), "layer3.1.bn%d.running_mean", index);
+            model.backbone.layer3_1[i].running_mean = ggml_get_tensor(model.ctx, name);
+            snprintf(name, sizeof(name), "layer3.1.bn%d.running_var", index);
+            model.backbone.layer3_1[i].running_var = ggml_get_tensor(model.ctx, name);
+        }
+    }
+
+    // layer3.2
+    model.backbone.layer3_2.resize(3);
+    model.backbone.layer3_2[1].padding = 1;
+    model.backbone.layer3_2[2].activate = true;
+    for (int i = 0; i < (int)model.backbone.layer3_2.size(); i++) {
+        char name[256];
+        int index = i + 1;
+        snprintf(name, sizeof(name), "layer3.2.conv%d.weight", index);
+        model.backbone.layer3_2[i].weights = ggml_get_tensor(model.ctx, name);
+        if (model.backbone.layer3_2[i].batch_normalize) {
+            snprintf(name, sizeof(name), "layer3.2.bn%d.weight", index);
+            model.backbone.layer3_2[i].bn_weight = ggml_get_tensor(model.ctx, name);
+            snprintf(name, sizeof(name), "layer3.2.bn%d.bias", index);
+            model.backbone.layer3_2[i].bias = ggml_get_tensor(model.ctx, name);
+            snprintf(name, sizeof(name), "layer3.2.bn%d.running_mean", index);
+            model.backbone.layer3_2[i].running_mean = ggml_get_tensor(model.ctx, name);
+            snprintf(name, sizeof(name), "layer3.2.bn%d.running_var", index);
+            model.backbone.layer3_2[i].running_var = ggml_get_tensor(model.ctx, name);
+        }
+    }
+
+    // layer3.3
+    model.backbone.layer3_3.resize(3);
+    model.backbone.layer3_3[1].padding = 1;
+    model.backbone.layer3_3[2].activate = true;
+    for (int i = 0; i < (int)model.backbone.layer3_3.size(); i++) {
+        char name[256];
+        int index = i + 1;
+        snprintf(name, sizeof(name), "layer3.3.conv%d.weight", index);
+        model.backbone.layer3_3[i].weights = ggml_get_tensor(model.ctx, name);
+        if (model.backbone.layer3_3[i].batch_normalize) {
+            snprintf(name, sizeof(name), "layer3.3.bn%d.weight", index);
+            model.backbone.layer3_3[i].bn_weight = ggml_get_tensor(model.ctx, name);
+            snprintf(name, sizeof(name), "layer3.3.bn%d.bias", index);
+            model.backbone.layer3_3[i].bias = ggml_get_tensor(model.ctx, name);
+            snprintf(name, sizeof(name), "layer3.3.bn%d.running_mean", index);
+            model.backbone.layer3_3[i].running_mean = ggml_get_tensor(model.ctx, name);
+            snprintf(name, sizeof(name), "layer3.3.bn%d.running_var", index);
+            model.backbone.layer3_3[i].running_var = ggml_get_tensor(model.ctx, name);
+        }
+    }
+    model.backbone.layer3_4.resize(3);
+    model.backbone.layer3_4[1].padding = 1;
+    model.backbone.layer3_4[2].activate = true;
+    for (int i = 0; i < (int)model.backbone.layer3_4.size(); i++) {
+        char name[256];
+        int index = i + 1;
+        snprintf(name, sizeof(name), "layer3.4.conv%d.weight", index);
+        model.backbone.layer3_4[i].weights = ggml_get_tensor(model.ctx, name);
+        if (model.backbone.layer3_4[i].batch_normalize) {
+            snprintf(name, sizeof(name), "layer3.4.bn%d.weight", index);
+            model.backbone.layer3_4[i].bn_weight = ggml_get_tensor(model.ctx, name);
+            snprintf(name, sizeof(name), "layer3.4.bn%d.bias", index);
+            model.backbone.layer3_4[i].bias = ggml_get_tensor(model.ctx, name);
+            snprintf(name, sizeof(name), "layer3.4.bn%d.running_mean", index);
+            model.backbone.layer3_4[i].running_mean = ggml_get_tensor(model.ctx, name);
+            snprintf(name, sizeof(name), "layer3.4.bn%d.running_var", index);
+            model.backbone.layer3_4[i].running_var = ggml_get_tensor(model.ctx, name);
+        }
+    }
+
+    // layer4.0
+    model.backbone.layer4_0.resize(4); // 3 conv2d and 1 downsample
+    model.backbone.layer4_0[1].stride = 2;
+    model.backbone.layer4_0[1].padding = 1;
+    model.backbone.layer4_0[2].activate = true;
+    model.backbone.layer4_0[3].stride = 2;
+    for (int i = 0; i < (int)model.backbone.layer4_0.size() - 1; i++) {
+        char name[256];
+        int index = i + 1;
+        snprintf(name, sizeof(name), "layer4.0.conv%d.weight", index);
+        model.backbone.layer4_0[i].weights = ggml_get_tensor(model.ctx, name);
+        if (model.backbone.layer4_0[i].batch_normalize) {
+            snprintf(name, sizeof(name), "layer4.0.bn%d.weight", index);
+            model.backbone.layer4_0[i].bn_weight = ggml_get_tensor(model.ctx, name);
+            snprintf(name, sizeof(name), "layer4.0.bn%d.bias", index);
+            model.backbone.layer4_0[i].bias = ggml_get_tensor(model.ctx, name);
+            snprintf(name, sizeof(name), "layer4.0.bn%d.running_mean", index);
+            model.backbone.layer4_0[i].running_mean = ggml_get_tensor(model.ctx, name);
+            snprintf(name, sizeof(name), "layer4.0.bn%d.running_var", index);
+            model.backbone.layer4_0[i].running_var = ggml_get_tensor(model.ctx, name);
+        }
+    }
+    // layer4.0 contains downsample
+    model.backbone.layer4_0[model.backbone.layer4_0.size() - 1].weights = ggml_get_tensor(model.ctx, "layer4.0.downsample.0.weight");
+    model.backbone.layer4_0[model.backbone.layer4_0.size() - 1].bn_weight = ggml_get_tensor(model.ctx, "layer4.0.downsample.1.weight");
+    model.backbone.layer4_0[model.backbone.layer4_0.size() - 1].bias = ggml_get_tensor(model.ctx, "layer4.0.downsample.1.bias");
+    model.backbone.layer4_0[model.backbone.layer4_0.size() - 1].running_mean = ggml_get_tensor(model.ctx, "layer4.0.downsample.1.running_mean");
+    model.backbone.layer4_0[model.backbone.layer4_0.size() - 1].running_var = ggml_get_tensor(model.ctx, "layer4.0.downsample.1.running_var");
+
+    // layer4.1
+    model.backbone.layer4_1.resize(3);
+    model.backbone.layer4_1[1].padding = 1;
+    model.backbone.layer4_1[2].activate = true;
+    for (int i = 0; i < (int)model.backbone.layer4_1.size(); i++) {
+        char name[256];
+        int index = i + 1;
+        snprintf(name, sizeof(name), "layer4.1.conv%d.weight", index);
+        model.backbone.layer4_1[i].weights = ggml_get_tensor(model.ctx, name);
+        if (model.backbone.layer4_1[i].batch_normalize) {
+            snprintf(name, sizeof(name), "layer4.1.bn%d.weight", index);
+            model.backbone.layer4_1[i].bn_weight = ggml_get_tensor(model.ctx, name);
+            snprintf(name, sizeof(name), "layer4.1.bn%d.bias", index);
+            model.backbone.layer4_1[i].bias = ggml_get_tensor(model.ctx, name);
+            snprintf(name, sizeof(name), "layer4.1.bn%d.running_mean", index);
+            model.backbone.layer4_1[i].running_mean = ggml_get_tensor(model.ctx, name);
+            snprintf(name, sizeof(name), "layer4.1.bn%d.running_var", index);
+            model.backbone.layer4_1[i].running_var = ggml_get_tensor(model.ctx, name);
+        }
+    }
+
+    // layer4.2
+    model.backbone.layer4_2.resize(3);
+    model.backbone.layer4_2[1].padding = 1;
+    model.backbone.layer4_2[2].activate = true;
+    for (int i = 0; i < (int)model.backbone.layer4_2.size(); i++) {
+        char name[256];
+        int index = i + 1;
+        snprintf(name, sizeof(name), "layer4.2.conv%d.weight", index);
+        model.backbone.layer4_2[i].weights = ggml_get_tensor(model.ctx, name);
+        if (model.backbone.layer4_2[i].batch_normalize) {
+            snprintf(name, sizeof(name), "layer4.2.bn%d.weight", index);
+            model.backbone.layer4_2[i].bn_weight = ggml_get_tensor(model.ctx, name);
+            snprintf(name, sizeof(name), "layer4.2.bn%d.bias", index);
+            model.backbone.layer4_2[i].bias = ggml_get_tensor(model.ctx, name);
+            snprintf(name, sizeof(name), "layer4.2.bn%d.running_mean", index);
+            model.backbone.layer4_2[i].running_mean = ggml_get_tensor(model.ctx, name);
+            snprintf(name, sizeof(name), "layer4.2.bn%d.running_var", index);
+            model.backbone.layer4_2[i].running_var = ggml_get_tensor(model.ctx, name);
+        }
+    }
+    
+
     return true;
 }
 
