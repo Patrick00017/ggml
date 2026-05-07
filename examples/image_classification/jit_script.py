@@ -17,7 +17,7 @@ def my_compiler(gm: torch.fx.GraphModule, example_inputs: List[torch.Tensor]):
     print(">>> my_compiler() invoked:")
     print(">>> FX graph:")
     gm.graph.print_tabular()
-    print(f">>> Code:\n{gm.code}")
+    # print(f">>> Code:\n{gm.code}")
     return gm.forward  # return a python callable
 
 
