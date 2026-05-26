@@ -100,6 +100,7 @@ ggml_tensor* aten_max_pool2d_with_indices_default(
     bool ceil_mode
 ){
     ggml_tensor* result = ggml_pool_2d(ctx, input, GGML_OP_POOL_MAX, kernel_size[0], kernel_size[1], stride[0], stride[1], padding[0], padding[1]);
+    return result;
 }
 
 ggml_tensor* aten_mean_dim(
@@ -108,7 +109,39 @@ ggml_tensor* aten_mean_dim(
     std::vector<int> dims,
     bool keep_dims
 ){
-    
+    // input shape: (a, b, c, d)
+    // dims can be [0, 1]
+    // ggml_mean is (a, b, c, d) -> (1, b, c, d)
+    // use the trick
+    ggml_tensor* output = input;
+    for(int i=0;i<dims.size();i++){
+        int dim = dims[i];
+        if(dim == 0){
+            output = ggml_mean(ctx, output);
+        }
+        else{
+            switch(dim){
+                case 1:
+                    ggml_tensor* output = ggml_permute(ctx, output, 1, 0, 2, 3);
+                    output = ggml_mean(ctx, output);
+                    output = ggml_permute(ctx, output, 1, 0, 2, 3);
+                    break;
+                case 2:
+                    ggml_tensor* output = ggml_permute(ctx, output, 2, 1, 0, 3);
+                    output = ggml_mean(ctx, output);
+                    output = ggml_permute(ctx, output, 2, 1, 0, 3);
+                    break;
+                case 3:
+                    ggml_tensor* output = ggml_permute(ctx, output, 3, 1, 2, 0);
+                    output = ggml_mean(ctx, output);
+                    output = ggml_permute(ctx, output, 3, 1, 2, 0);
+                    break;
+            }
+        }
+    }
+    if(keep_dims)
+        return output;
+    // todo: keep dims is false
 }
 
 ggml_tensor* aten_view_default(ggml_context* ctx, ggml_tensor* input, std::vector<int> shape){
@@ -136,10 +169,14 @@ ggml_tensor* aten_addmm_default(
     ggml_tensor* input,
     ggml_tensor* mat1,
     ggml_tensor* mat2,
-    int beta = 1,
-    int alpha = 1
+    float beta = 1.0f,
+    float alpha = 1.0f
 ){
-
+    ggml_tensor* output = ggml_mul_mat(ctx, mat1, mat2);
+    output = ggml_scale(ctx, output, alpha);
+    if(beta == 0)
+        return output;
+    return ggml_add(ctx, output, ggml_scale(ctx, input, beta));
 }
 
 
